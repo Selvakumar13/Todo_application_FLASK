@@ -16,9 +16,16 @@
             <br>
             <li>Status: {{todo.status}}</li>
             <br>
-         </ul>
+<a href={{ url_for('tasks.update',id=todo.id) }}>
+   <button class="add_button ">Update</button>
+   </a>
+   <a href={{ url_for('tasks.delete',id=todo.id) }}>
+   <button class="add_button ">Delete</button>
+   </a>
+   </ul>
          {% endfor %}
       </div>
    </div>
 </section>
 {% endblock %}
+

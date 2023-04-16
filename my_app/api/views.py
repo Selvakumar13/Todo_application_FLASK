@@ -72,45 +72,67 @@ def todos():
 def update(id):
     user = current_user
     form = EditTodoForm()
-    task = Task.query.filter_by(todo_owner=current_user.id).first()
+    task = Task.query.filter_by(id=id,todo_owner=current_user.id).first()
     if request.method=="POST":
         if form.validate_on_submit:
-         task.task_name = form.task_name.data
-         task.due_date = form.due_date.data
-         task.status = form.status.data
-         db.session.commit()
-         return redirect('/todos')
+             task.task_name = form.task_name.data
+             task.due_date = form.due_date.data
+             task.status = form.status.data
+             db.session.commit()
+             return redirect('/todos')
     elif request.method == 'GET':
         form.task_name.data = task.task_name
         form.due_date.data = task.due_date
         form.status.data = task.status
     return render_template('edit_todo.html', form=form)
 
-@todo.route('/delete_task/<int:id>',methods=['GET','POST'])
+@todo.route('/delete/<int:id>',methods=['GET','POST'])
 def delete(id):
     task=Task.query.filter_by(id=id,todo_owner=current_user.id).first()
     if request.method=='POST':
         if task:
             db.session.delete(task)
             db.session.commit()
-        return redirect('/todos')
+            return redirect('/todos')
         abort(404)
     return render_template('delete_task.html')
-    
+
+
+@todo.route('/delete_user/<int:id>',methods=['GET','POST'])
+def delete_user(id):
+    user = User.query.filter_by(id=id).first()
+    if request.method=='POST':
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return redirect('/users')
+        abort(404)
+
+
 @todo.route('/users')
 def user():
     users=User.query.all()
-    print(users)
-    res={}
-    for user in users:
-        res={
-            'id':user.id,
-            'first_name':user.first_name,
-            'last_name':user.last_name,
-            'email':user.email,
-            'password':user.password
-            }
-    return jsonify(res)
+    return render_template('users.html', users=users)
+
+@todo.route('/tasks')
+def tasks():
+    tasks = Task.query.all()
+    users = User.query.all()
+
+    response = []
+    for task, user in zip(tasks, users):
+        task_dict = {
+            'user_name': user.first_name,
+            'user_email':user.email,
+            'task_name': task.task_name,
+            'status': task.status,
+            'due_date': task.due_date,
+            'Task_id': task.id
+            
+        }
+        response.append(task_dict)
+
+    return jsonify(response)
         
         
     
